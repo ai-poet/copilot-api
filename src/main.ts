@@ -21,6 +21,7 @@ interface RunServerOptions {
   rateLimitWait: boolean
   githubToken?: string
   visionEnabled: boolean
+  apiToken?: string
 }
 
 export async function runServer(options: RunServerOptions): Promise<void> {
@@ -38,6 +39,14 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   state.rateLimitSeconds = options.rateLimit
   state.rateLimitWait = options.rateLimitWait
   state.visionEnabled = options.visionEnabled
+
+  if (options.apiToken) {
+    state.apiToken = options.apiToken
+    consola.info("Using provided API token for authentication")
+  } else if (process.env.API_TOKEN) {
+    state.apiToken = process.env.API_TOKEN
+    consola.info("Using API token from environment variable")
+  }
 
   if (options.visionEnabled) {
     consola.info("Vision capability enabled")
@@ -117,6 +126,12 @@ const start = defineCommand({
       description: "Enable vision capabilities",
       required: false,
     },
+    "api-token": {
+      alias: "a",
+      type: "string",
+      description: "API token for Bearer authentication (can also be set via API_TOKEN environment variable)",
+      required: false,
+    },
   },
   run({ args }) {
     const rateLimitRaw = args["rate-limit"]
@@ -135,6 +150,7 @@ const start = defineCommand({
       rateLimitWait: Boolean(args.wait),
       githubToken: args["github-token"],
       visionEnabled: args.vision,
+      apiToken: args["api-token"],
     })
   },
 })

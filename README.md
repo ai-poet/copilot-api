@@ -26,6 +26,37 @@ To install dependencies, run:
 bun install
 ```
 
+## Authentication
+
+The API supports Bearer Token authentication to secure access to the endpoints. You can provide the API token in two ways:
+
+1. **Environment Variable**: Set the `API_TOKEN` environment variable
+2. **Command Line**: Use the `--api-token` flag
+
+If no API token is provided, the server will run without authentication (open access).
+
+### Setting up Authentication
+
+```sh
+# Using environment variable
+export API_TOKEN="your-secret-token"
+npx copilot-api@latest start
+
+# Using command line flag
+npx copilot-api@latest start --api-token "your-secret-token"
+```
+
+### Making Authenticated Requests
+
+When authentication is enabled, include the Bearer token in your requests:
+
+```sh
+curl -H "Authorization: Bearer your-secret-token" \
+     -H "Content-Type: application/json" \
+     -d '{"model":"gpt-4","messages":[{"role":"user","content":"Hello"}]}' \
+     http://localhost:4141/chat/completions
+```
+
 ## Using with docker
 
 Build image
@@ -38,6 +69,16 @@ Run the container
 
 ```sh
 docker run -p 4141:4141 copilot-api
+```
+
+With authentication:
+
+```sh
+# Build with API token
+docker build --build-arg API_TOKEN="your-secret-token" -t copilot-api .
+
+# Or run with environment variable
+docker run -p 4141:4141 -e API_TOKEN="your-secret-token" copilot-api
 ```
 
 ## Using with npx
@@ -83,6 +124,7 @@ The following command line options are available for the `start` command:
 | --wait         | Wait instead of error when rate limit is hit                                  | false   | -w    |
 | --github-token | Provide GitHub token directly (must be generated using the `auth` subcommand) | none    | -g    |
 | --vision       | Enable vision capabilities                                                    | false   | none  |
+| --api-token    | API token for Bearer authentication (can also be set via API_TOKEN env var)  | none    | -a    |
 
 ### Auth Command Options
 
@@ -119,6 +161,9 @@ npx copilot-api@latest start --github-token ghp_YOUR_TOKEN_HERE
 # Enable vision capabilities
 npx copilot-api@latest start --vision
 
+# Enable Bearer token authentication
+npx copilot-api@latest start --api-token "your-secret-token"
+
 # Run only the auth flow
 npx copilot-api@latest auth
 
@@ -150,6 +195,7 @@ bun run start
 - Be mindful that Claude 3.7 thinking mode consumes more tokens
 - Enable the `--manual` flag to review and approve each request before processing
 - If you have a GitHub Business account with Copilot, use the `--business` flag
+- Use Bearer token authentication in production environments to secure your API
 
 ### Manual Request Approval
 
