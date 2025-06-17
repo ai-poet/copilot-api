@@ -41,6 +41,7 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   state.rateLimitWait = options.rateLimitWait
   state.visionEnabled = options.visionEnabled
 
+  if (options.apiToken) {
     state.apiToken = options.apiToken
     consola.info("Using provided API token for authentication")
   } else if (process.env.API_TOKEN) {
