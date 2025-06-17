@@ -1,6 +1,5 @@
 import { copilotHeaders, copilotBaseUrl } from "~/lib/api-config"
 import { HTTPError } from "~/lib/http-error"
-import { transformModelName } from "~/lib/models"
 import { state } from "~/lib/state"
 import { createStreamingResponse } from "~/lib/streaming-utils"
 
@@ -8,17 +7,8 @@ export const createChatCompletions = async (
   payload: any,
 ): Promise<any | AsyncIterable<any>> => {
   if (!state.copilotToken) throw new Error("Copilot token not found")
-
-  // Transform model name
-  if (payload.model) {
-    payload.model = transformModelName(payload.model)
-  }
-
   // Process all models (including Anthropic models)
   const processedPayload = { ...payload }
-
-
-
   try {
     // Detect vision usage for headers
     const visionEnable = processedPayload.messages?.some(

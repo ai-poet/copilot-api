@@ -3,7 +3,6 @@ import type { Context } from "hono"
 import { streamSSE, type SSEMessage } from "hono/streaming"
 import { awaitApproval } from "~/lib/approval"
 import { isNullish } from "~/lib/is-nullish"
-import { transformModelName } from "~/lib/models"
 import { checkRateLimit } from "~/lib/rate-limit"
 import { state } from "~/lib/state"
 import { createChatCompletions } from "~/services/copilot/create-chat-completions"
@@ -16,11 +15,6 @@ export async function handleCompletion(c: Context) {
   // No format conversion - pass through all requests as OpenAI format
   let payload = originalPayload
 
-  // Transform model name if needed
-  if (payload.model) {
-    payload.model = transformModelName(payload.model)
-  }
-
   // All requests are passed through as OpenAI format
 
   // consola.info("Current token count:", getTokenCount(payload.messages))
@@ -28,14 +22,12 @@ export async function handleCompletion(c: Context) {
   if (state.manualApprove) await awaitApproval()
 
   if (isNullish(payload.max_tokens) && payload.model) {
-    // Transform model name to internal format for lookup
-    const internalModelName = transformModelName(payload.model)
     const selectedModel = state.models?.data.find(
-      (model) => model.id === internalModelName,
+      (model) => model.id === payload.model,
     )
-
-    if (selectedModel?.capabilities?.limits?.max_output_tokens) {
-      payload.max_tokens = selectedModel.capabilities.limits.max_output_tokens
+    payload = {
+      ...payload,
+      max_tokens: selectedModel?.capabilities.limits.max_output_tokens,
     }
   }
 
