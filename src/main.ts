@@ -30,6 +30,9 @@ export async function runServer(options: RunServerOptions): Promise<void> {
     consola.level = 5
   }
 
+  // Ensure necessary directories and files exist
+  await ensurePaths()
+
   if (options.business) {
     state.accountType = "business"
   } else if (options.enterprise) {

@@ -40,6 +40,14 @@ export async function setupGitHubToken(
   options?: SetupGitHubTokenOptions,
 ): Promise<void> {
   try {
+    // Check if GitHub token is provided via environment variable
+    if (process.env.GITHUB_TOKEN && !options?.force) {
+      state.githubToken = process.env.GITHUB_TOKEN
+      consola.info("Using GitHub token from environment variable")
+      await logUser()
+      return
+    }
+
     const githubToken = await readGithubToken()
 
     if (githubToken && !options?.force) {
