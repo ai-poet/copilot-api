@@ -1,85 +1,67 @@
-import { events } from "fetch-event-stream"
-
 import { copilotHeaders, copilotBaseUrl } from "~/lib/api-config"
 import { HTTPError } from "~/lib/http-error"
+import { transformModelName } from "~/lib/models"
 import { state } from "~/lib/state"
+import { createStreamingResponse } from "~/lib/streaming-utils"
 
 export const createChatCompletions = async (
-  payload: ChatCompletionsPayload,
-) => {
+  payload: any,
+): Promise<any | AsyncIterable<any>> => {
   if (!state.copilotToken) throw new Error("Copilot token not found")
 
-  const response = await fetch(`${copilotBaseUrl(state)}/chat/completions`, {
-    method: "POST",
-    headers: copilotHeaders(state),
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok)
-    throw new HTTPError("Failed to create chat completions", response)
-
-  if (payload.stream) {
-    return events(response)
+  // Transform model name
+  if (payload.model) {
+    payload.model = transformModelName(payload.model)
   }
 
-  return (await response.json()) as ChatCompletionResponse
+  // Process all models (including Anthropic models)
+  const processedPayload = { ...payload }
+
+
+
+  try {
+    // Detect vision usage for headers
+    const visionEnable = processedPayload.messages?.some(
+      (message: any) =>
+        Array.isArray(message.content)
+        && message.content.some(
+          (part: any) => part.type === "image_url" || part.type === "image",
+        ),
+    )
+
+    const response = await fetch(`${copilotBaseUrl(state)}/chat/completions`, {
+      method: "POST",
+      headers: copilotHeaders(state, visionEnable),
+      body: JSON.stringify(processedPayload),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+
+
+
+      throw new HTTPError(
+        `Failed to create chat completions: ${errorText}`,
+        response,
+      )
+    }
+
+    if (processedPayload.stream) {
+      return createStreamingResponse(response)
+    }
+
+    const responseData = (await response.json()) as any
+    return responseData
+  } catch (error) {
+    throw error
+  }
 }
 
-// Streaming types
-
-export interface ChatCompletionChunk {
-  choices: [Choice]
-  created: number
-  object: "chat.completion.chunk"
-  id: string
-  model: string
-}
-
-interface Delta {
-  content?: string
-  role?: string
-}
-
-interface Choice {
-  index: number
-  delta: Delta
-  finish_reason: "stop" | null
-  logprobs: null
-}
-
-// Non-streaming types
-
-export interface ChatCompletionResponse {
-  id: string
-  object: string
-  created: number
-  model: string
-  choices: [ChoiceNonStreaming]
-}
-
-interface ChoiceNonStreaming {
-  index: number
-  message: Message
-  logprobs: null
-  finish_reason: "stop"
-}
-
-// Payload types
+// Flexible types for maximum compatibility
+export type MessageRole = "user" | "assistant" | "system" | "tool"
 
 export interface ChatCompletionsPayload {
-  messages: Array<Message>
+  messages: Array<any>
   model: string
-  temperature?: number
-  top_p?: number
-  max_tokens?: number
-  stop?: Array<string>
-  n?: number
-  stream?: boolean
+  [key: string]: any // Allow any additional fields
 }
-
-export interface Message {
-  role: "user" | "assistant" | "system"
-  content: string
-}
-
-// https://platform.openai.com/docs/api-reference

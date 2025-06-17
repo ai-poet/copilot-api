@@ -26,6 +26,7 @@ To install dependencies, run:
 bun install
 ```
 
+<<<<<<< HEAD
 ## Authentication
 
 The API supports Bearer Token authentication to secure access to the endpoints. You can provide the API token in two ways:
@@ -58,6 +59,9 @@ curl -H "Authorization: Bearer your-secret-token" \
 ```
 
 ## Using with docker
+=======
+## Using with Docker
+>>>>>>> pr-42
 
 Build image
 
@@ -119,12 +123,16 @@ The following command line options are available for the `start` command:
 | --port         | Port to listen on                                                             | 4141    | -p    |
 | --verbose      | Enable verbose logging                                                        | false   | -v    |
 | --business     | Use a business plan GitHub account                                            | false   | none  |
+| --enterprise   | Use an enterprise plan GitHub account                                         | false   | none  |
 | --manual       | Enable manual request approval                                                | false   | none  |
 | --rate-limit   | Rate limit in seconds between requests                                        | none    | -r    |
 | --wait         | Wait instead of error when rate limit is hit                                  | false   | -w    |
 | --github-token | Provide GitHub token directly (must be generated using the `auth` subcommand) | none    | -g    |
+<<<<<<< HEAD
 | --vision       | Enable vision capabilities                                                    | false   | none  |
 | --api-token    | API token for Bearer authentication (can also be set via API_TOKEN env var)  | none    | -a    |
+=======
+>>>>>>> pr-42
 
 ### Auth Command Options
 
@@ -143,8 +151,11 @@ npx copilot-api@latest start
 # Run on custom port with verbose logging
 npx copilot-api@latest start --port 8080 --verbose
 
-# Use with a Business GitHub account
+# Use with a business plan GitHub account
 npx copilot-api@latest start --business
+
+# Use with an enterprise plan GitHub account
+npx copilot-api@latest start --enterprise
 
 # Enable manual approval for each request
 npx copilot-api@latest start --manual
@@ -158,12 +169,15 @@ npx copilot-api@latest start --rate-limit 30 --wait
 # Provide GitHub token directly
 npx copilot-api@latest start --github-token ghp_YOUR_TOKEN_HERE
 
+<<<<<<< HEAD
 # Enable vision capabilities
 npx copilot-api@latest start --vision
 
 # Enable Bearer token authentication
 npx copilot-api@latest start --api-token "your-secret-token"
 
+=======
+>>>>>>> pr-42
 # Run only the auth flow
 npx copilot-api@latest auth
 
@@ -194,8 +208,12 @@ bun run start
 - Disable `yes-always` in your aider configuration
 - Be mindful that Claude 3.7 thinking mode consumes more tokens
 - Enable the `--manual` flag to review and approve each request before processing
+<<<<<<< HEAD
 - If you have a GitHub Business account with Copilot, use the `--business` flag
 - Use Bearer token authentication in production environments to secure your API
+=======
+- If you have a GitHub business or enterprise plan account with Copilot, use the `--business` or `--enterprise` flag respectively
+>>>>>>> pr-42
 
 ### Manual Request Approval
 

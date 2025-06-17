@@ -16,6 +16,7 @@ interface RunServerOptions {
   port: number
   verbose: boolean
   business: boolean
+  enterprise: boolean
   manual: boolean
   rateLimit?: number
   rateLimitWait: boolean
@@ -27,12 +28,12 @@ interface RunServerOptions {
 export async function runServer(options: RunServerOptions): Promise<void> {
   if (options.verbose) {
     consola.level = 5
-    consola.info("Verbose logging enabled")
   }
 
   if (options.business) {
     state.accountType = "business"
-    consola.info("Using business plan GitHub account")
+  } else if (options.enterprise) {
+    state.accountType = "enterprise"
   }
 
   state.manualApprove = options.manual
@@ -40,7 +41,6 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   state.rateLimitWait = options.rateLimitWait
   state.visionEnabled = options.visionEnabled
 
-  if (options.apiToken) {
     state.apiToken = options.apiToken
     consola.info("Using provided API token for authentication")
   } else if (process.env.API_TOKEN) {
@@ -52,12 +52,9 @@ export async function runServer(options: RunServerOptions): Promise<void> {
     consola.info("Vision capability enabled")
   }
 
-  await ensurePaths()
-  await cacheVSCodeVersion()
 
   if (options.githubToken) {
     state.githubToken = options.githubToken
-    consola.info("Using provided GitHub token")
   } else {
     await setupGitHubToken()
   }
@@ -95,7 +92,12 @@ const start = defineCommand({
     business: {
       type: "boolean",
       default: false,
-      description: "Use a business plan GitHub Account",
+      description: "Use a business plan GitHub account",
+    },
+    enterprise: {
+      type: "boolean",
+      default: false,
+      description: "Use an enterprise plan GitHub account",
     },
     manual: {
       type: "boolean",
@@ -145,6 +147,7 @@ const start = defineCommand({
       port,
       verbose: args.verbose,
       business: args.business,
+      enterprise: args.enterprise,
       manual: args.manual,
       rateLimit,
       rateLimitWait: Boolean(args.wait),
